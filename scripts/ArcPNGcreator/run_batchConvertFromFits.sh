@@ -1,1 +1,0 @@
-run_batchConvertFromFits.r117.sh

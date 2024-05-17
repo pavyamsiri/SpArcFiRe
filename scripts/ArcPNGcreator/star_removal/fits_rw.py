@@ -1,1 +1,0 @@
-/home/nirajp1/CANDELS/star_removal/fits_rw.py
