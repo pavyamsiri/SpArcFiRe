@@ -109,7 +109,6 @@ if writeSettingsForEveryImage
     pause(sleepSecondsAfterImageWrite);
 end
 
-%EDITS
 if stgs.imageGuidingThreshold >= 0 
     if ~strcmp(guideImageFile,'NONE') && exist(guideImageFile) == 2 %TODO test
         imageGuiding = true;
@@ -123,7 +122,6 @@ end
 if ~strcmp(guideImageFile,'NONE') && imageGuiding == false
     error ('guide image specified but no threshold was given');
 end
-%EDITS END
 
 tStartClus = tic;
 
@@ -195,16 +193,6 @@ ofld = ofld .* repmat(intensityImg ~= 0, [1 1 2]);
 
 if ~isempty(gxyName) && outputParams.writeImages && generateOrientationFieldPdf
     displayOrientationField(ofld, true, false);
-%     export_fig([outputPath '-orientation-field.pdf']);
-    %ti = get(gca,'TightInset');
-    %set(gca,'Position',[ti(1) ti(2) 1-ti(3)-ti(1) 1-ti(4)-ti(2)]);
-    %set(gca,'units','centimeters')
-    %pos = get(gca,'Position');
-    %ti = get(gca,'TightInset');
-    %set(gcf, 'PaperUnits','centimeters');
-    %set(gcf, 'PaperSize', [pos(3)+ti(1)+ti(3) pos(4)+ti(2)+ti(4)]);
-    %set(gcf, 'PaperPositionMode', 'manual');
-    %set(gcf, 'PaperPosition',[0 0 pos(3)+ti(1)+ti(3) pos(4)+ti(2)+ti(4)]);
     figSize = 1024/150;
     set(gcf, 'PaperUnits','inches');
     set(gcf, 'PaperSize', [figSize figSize]);
@@ -238,12 +226,6 @@ end
 
 tStartOpt = tic;
 
-% if ~useNewBarDet
-%     [barInds, barAngles, barHalfLens, clusMtxs] = ...
-%         findBarFromClusters(clusMtxs, ctrR, ctrC);
-% end
-
-% sizes = getClusterSizes(clusters); sizes(sizes >= clusSizeCutoff)
 [lgspParams, lgspBounds, sumSqErrs, used2rev, failed2rev, hasBadBounds] = fitLogSpiralsToClusters(...
     clusMtxs, ctrR, ctrC, stgs);
 
@@ -283,7 +265,6 @@ if ~isempty(clusWithCenter)
 end
 
 
-% clusMtxsRet = clusMtxs;
 hacImg = showClustersFromMtxs(cat(3, clusMtxs, barClus), size(img));
 if outputParams.displayFigures
     figure; imshow(hacImg);
@@ -303,9 +284,7 @@ if ~isempty(gxyName) && outputParams.writeImages
         pause(sleepSecondsAfterImageWrite);
     end
 
-%     hacImg = showClusters(clusters, size(img), clusSizeCutoff);
     hacOverlay = displayLgspOverlay(hacImg, lgspParams, ctrR, ctrC, lgspBounds);
-%     hacOverlay = hacOverlay + repmat(barOverlay, [1 1 3]);
     if barUsed
         hacOverlay = addBarOverlay(hacOverlay, ctrR, ctrC, barAngles, barHalfLens, true);
     end
@@ -324,8 +303,6 @@ if outputParams.displayFigures
     figure; imshow(clusOverlay); 
     figure; imshow(olWOrig);
 end
-% figure; scatter3(lgspParams(:, 1), lgspParams(:, 2), lgspParams(:, 3));
-% xlabel('th'); ylabel('a'); zlabel('ir')
 
 if outputParams.displayFigures
     figure;
@@ -338,28 +315,6 @@ if ~isempty(gxyName) && outputParams.writeImages
     pause(sleepSecondsAfterImageWrite);
 end
 
-% if ~isempty(gxyName) && outputParams.writeTxt
-%     gxyParams = getGalaxyParams(lgspParams, lgspBounds, sumSqErrs,...
-%         used2rev, hasBadBounds, barUsed, barInfo, barInds, img, clusMtxs, ...
-%         stgs, gxyParams);
-%     writeGalaxyParams(gxyParams, gxyName, outputDir);
-% end
-
-%%%%%% EDITS HERE %%%%%
-
-% do arc merging and produce output files analogous to the ones without
-% the merging
-
-% USES MEAN IMAGE AS GUIDE FOR CLUSTERING 
-%if strcmp( gxyName(end), 'n')
-%    fprintf('in mean image clustering\n');
-%    clusMtxsM = mergeClustersByFit(clusMtxs, ctrR, ctrC, barInfo, stgs);
-%    %save([outputPath,'-Clusters.mat'], clusMtxsM);
-%else
-%    fprintf('using mean image guide\n');
-%    clusMtxsM = mergeClustersByGuide(clusMtxs, outputPath, 0.0);
-%    %save([outPath,'-meanClusters.mat'],clusMtxs);
-%end
 
 clusMtxsM = mergeClustersByFit(clusMtxs, ctrR, ctrC, barInfo, stgs);
 if imageGuiding
@@ -367,17 +322,8 @@ if imageGuiding
     clusMtxsM = mergeClustersByGuide(clusMtxsM, outputPath, stgs.imageGuidingThreshold, guideImageFile);
 end
 
-% if imageGuiding
-%    fprintf('using image guide clustering\n');
-%    clusMtxsM = mergeClustersByGuide(clusMtxs, outputPath, stgs.imageGuidingThreshold, guideImageFile);
-%else
-%    fprintf('using standard clustering\n');
-%    clusMtxsM = mergeClustersByFit(clusMtxs, ctrR, ctrC, barInfo, stgs);
-%end 
-
 
 failed2revDuringMerge = false;
-%clusMtxsM = mergeClustersByFit(clusMtxs, ctrR, ctrC, barInfo, stgs);
 [lgspParamsM, lgspBoundsM, sumSqErrsM, used2revM, failed2revM, hasBadBoundsM] = ...
     fitLogSpiralsToClusters(clusMtxsM, ctrR, ctrC, stgs);
 [barClusM, lgspParamsM, lgspBoundsM, sumSqErrsM, used2revM, failed2revM, hasBadBoundsM, clusMtxsM, barAnglesM, barHalfLensM] = ...
@@ -398,17 +344,6 @@ end
 barUsedM = ~isempty(barClusM);
 gxyParams.failed2revDuringSecondaryMerging = failed2revDuringMerge;
     
-% else
-%     [barIndsM, barAnglesM, barHalfLensM, clusMtxsM] = ...
-%         findBarFromClusters(clusMtxsM, ctrR, ctrC);
-%     isBarM = false(size(clusMtxs, 3)); isBarM(barIndsM) = true;
-%     % in the old bar detection, bar cluster matrices were removed
-%     lgspParamsM = lgspParamsM(:, isBarM);
-%     lgspBoundsM = lgspBoundsM(:, isBarM);
-%     sumSqErrsM = sumSqErrsM(isBarM);
-% end
-% clusMtxsMB = clusMtxsM;
-% barIndsM
 hacImgM = showClustersFromMtxs(cat(3, clusMtxsM, barClusM), size(img));
 if ~isempty(gxyName) && outputParams.writeImages
     clusOverlay = displayClusterOverlay(imgNoUsm, cat(3, clusMtxsM, barClusM));
@@ -419,9 +354,7 @@ if ~isempty(gxyName) && outputParams.writeImages
     imwrite(clusMask, [outputPath '-H_clusMask-merged.png']);
     pause(sleepSecondsAfterImageWrite);
     
-%     hacImg = showClusters(clusters, size(img), clusSizeCutoff);
     hacOverlay = displayLgspOverlay(hacImgM, lgspParamsM, ctrR, ctrC, lgspBoundsM);
-%     hacOverlay = hacOverlay + repmat(barOverlay, [1 1 3]);
     if barUsedM
         hacOverlay = addBarOverlay(hacOverlay, ctrR, ctrC, barAnglesM, barHalfLensM, true);
     end
@@ -456,20 +389,9 @@ if ~isempty(gxyName) && outputParams.writeTxt
         clusMtxsM, stgs, gxyParams);
     writeGalaxyParams(gxyParamsM, [gxyName '-merged'], outputDir);
 end
-% close all
-% figure;
-% showClustersFromMtxs(clusMtxsM, size(img));
-% figure; imagesc(imresize(imgOrig, size(img))); axis image; colormap gray % TEMP - plots for paper
-% figure; imagesc(imgNoUsm); axis image; colormap gray % TEMP - plots for paper
-% axis off
-% % figure; displayLgspOverlay(imgNoUsm, lgspParamsM, ctrR, ctrC, lgspBoundsM);
-% figure; displayLgspPlot(lgspParamsM, lgspBoundsM, imgNoUsm, ctrR, ctrC, barAnglesM, barHalfLensM);  % TEMP - plots for paper
-% axis off
 
 fprintf('Total time: \n')
 toc(tStartClus)
-
-% clusMtxs = clusMtxsRet;
 
 % use the merged version
 lgspParams = lgspParamsM;
@@ -527,10 +449,6 @@ function [barClus, params, bounds, errs, used2rev, failed2rev, hasBadBounds, clu
             hasBadBounds = hasBadBounds(~isBarClus);
         else
             barClus = [];
-%             warn_msg = 'barDetection:galaxyScoredAsBarredButNoBarClusterFound';
-%             if isempty(strmatch(warn_msg, gxyParams.warnings)) 
-%                 gxyParams.warnings = [gxyParams.warnings warn_msg];
-%             end
         end
         barAngles = barInfo.stdzAngle;
         barHalfLens = barInfo.stdzHalfLength;
@@ -540,54 +458,5 @@ function [barClus, params, bounds, errs, used2rev, failed2rev, hasBadBounds, clu
         barHalfLens = [];
     end
 end
-
-% [lgspParamsEM, arcBoundsEM] = emRefineArcs(img, lgspParams, ctrR, ctrC, arcBounds, [gxyName 'tr.avi']);
-% emOverlay = displayLgspOverlay(img, lgspParamsEM, ctrR, ctrC, arcBoundsEM);
-
-% close all
-% subplot(2, 2, 1); imagesc(imgOrig); colormap gray; axis image
-% subplot(2, 2, 2); imagesc(img); colormap gray; axis image
-% subplot(2, 2, 3); imshow(clusOverlay);
-% subplot(2, 2, 4); imshow(emOverlay);
-
-% errs = zeros(length(sumSqErrs), length(sumSqErrs), 7);
-% errNames = {'errRatio'; 'meanErrRatio'; 'minCrossErr'; 'maxCrossErr'; 'meanCrossErr'; 'errRatioToMin'; 'ArcDist'};
-% 
-% for ii=1:1:length(sumSqErrs)
-%     for jj=ii+1:1:length(sumSqErrs)
-%         [errRatio, meanErrRatio, minCrossErr, maxCrossErr, meanCrossErr, paramDist, arcDist] = ...
-%             calcArcMergeErr(clusMtxs(:, :, ii), lgspParams(ii, :), arcBounds(ii, :), sumSqErrs(ii), ...
-%             clusMtxs(:, :, jj), lgspParams(jj, :), arcBounds(jj, :), sumSqErrs(jj), ctrR, ctrC, size(img));
-%         errs(ii, jj, :) = [errRatio, meanErrRatio, minCrossErr, maxCrossErr, meanCrossErr, paramDist, arcDist];
-%     end
-% end
-% 
-% % close all
-% showClusters(clusters, size(img), clusSizeCutoff);
-% for ii=1:1:size(errs, 3)
-%     if ii ~= 6
-%         continue;
-%     end
-%     figure
-%     curErrs = errs(:, :, ii);
-%     curErrs(curErrs == 0) = inf;
-%     for jj=1:1:40
-%         [mV, mI] = min(curErrs(:));
-%         [ci1, ci2] = ind2sub(size(curErrs), mI); 
-%         subplot(4, 10, jj);
-%         imshow(clusMtxs(:, :, ci1) + clusMtxs(:, :, ci2));
-%         title(sprintf('%s = %2.4f', errNames{ii}, mV));
-%         curErrs(mI) = inf;
-%     end
-% end
-% errs
-
-% nMerges
-
-% lgspParams
-% 
-% std(lgspParams)
-% min(lgspParams)
-% max(lgspParams)
 
 end
