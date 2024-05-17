@@ -15,10 +15,6 @@ stgs.generateOrientationFieldPdf = false;
 % actually uses non-blocking I/O).
 stgs.sleepSecondsAfterImageWrite = 0.0;
 
-% whether to use the C++ implementation where available (currently for the
-% clustering only)
-stgs.useMex = true;
-
 % Number of image scales to use when computing the orientation field.
 % The dimensions of the preprocessed image (see resizeDims) must be 
 % divisible by 2^(numOrientationFieldLevels-1).

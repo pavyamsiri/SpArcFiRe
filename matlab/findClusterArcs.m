@@ -85,7 +85,6 @@ low_resolution_warn_thres = 40;
 writeSettingsForEveryImage = stgs.writeSettingsForEveryImage;
 sleepSecondsAfterImageWrite = stgs.sleepSecondsAfterImageWrite;
 generateOrientationFieldPdf = stgs.generateOrientationFieldPdf;
-useMex = stgs.useMex;
 clusSizeCutoff = stgs.clusSizeCutoff;
 minMinorAxisLen = stgs.minMinorAxisLen;
 stopThres = stgs.stopThres;
@@ -221,19 +220,12 @@ end
 % to using a global instead
 global failed2revDuringMerge;
 failed2revDuringMerge = false;
-if useMex
-    [fromInds, toInds, simlVals, numElts] = ...
-        calcPxlSimilarities(img, ofld, stgs, stopThres);
-    clusAsgns = doHacClustering(fromInds, toInds, simlVals, intensityImg, ctrR, ctrC, barInfo, stgs);
-    clusMtxs = asgnsToMtxs(clusAsgns, intensityImg, stgs.clusSizeCutoff);
-else
-    simls = genSimilarityMtx(img, ofld, stgs, stopThres);
-    clusters = genHacTree(simls, intensityImg, barInfo, ctrR, ctrC, stgs);
-    if outputParams.displayFigures
-        showClusters(clusters, size(img), clusSizeCutoff);
-    end
-    clusMtxs = hac2mtxs(clusters, intensityImg, clusSizeCutoff);
+simls = genSimilarityMtx(img, ofld, stgs, stopThres);
+clusters = genHacTree(simls, intensityImg, barInfo, ctrR, ctrC, stgs);
+if outputParams.displayFigures
+    showClusters(clusters, size(img), clusSizeCutoff);
 end
+clusMtxs = hac2mtxs(clusters, intensityImg, clusSizeCutoff);
 gxyParams.failed2revDuringMergeCheck = failed2revDuringMerge;
 
 fprintf('Time for all clustering steps: \n');

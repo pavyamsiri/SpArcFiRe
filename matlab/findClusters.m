@@ -6,7 +6,6 @@ if nargin < 4 || isempty(plotFlag)
     plotFlag = false;
 end
 
-useMex = stgs.useMex;
 stopThres = stgs.stopThres;
 colorThres = stgs.clusSizeCutoff;
 
